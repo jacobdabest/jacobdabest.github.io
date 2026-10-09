@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FRIDAY</title>
+<meta name="description" content="FRIDAY — a self-hosted AI, built from scratch.">
+<style>
+  :root{
+    --bg:#07060a;
+    --ink:#f3e9ea;
+    --muted:#9a8d90;
+    --red:#e01020;
+    --red-glow:#ff2b3b;
+    --panel:rgba(20,8,10,.55);
+    --line:rgba(224,16,32,.25);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    min-height:100%;
+    display:flex;
+    flex-direction:column;
+  }
+  canvas#rain{
+    position:fixed;inset:0;z-index:0;
+    opacity:.16;
+    pointer-events:none;
+  }
+  /* soft red vignette */
+  body::after{
+    content:"";position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:radial-gradient(circle at 50% 38%,transparent 0%,transparent 42%,rgba(0,0,0,.65) 100%);
+  }
+  .wrap{
+    position:relative;z-index:2;
+    flex:1;
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    text-align:center;
+    padding:48px 16px;
+    gap:28px;
+  }
+  .mark{
+    display:flex;align-items:center;gap:10px;
+    color:var(--muted);font-size:13px;letter-spacing:.35em;
+    text-transform:uppercase;
+  }
+  .dot{
+    width:9px;height:9px;border-radius:50%;
+    background:var(--red);
+    box-shadow:0 0 10px var(--red-glow),0 0 22px var(--red-glow);
+    animation:pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+  h1{
+    font-size:clamp(64px,22vw,180px);
+    font-weight:800;
+    letter-spacing:.04em;
+    line-height:.9;
+    color:var(--ink);
+    text-shadow:0 0 28px rgba(224,16,32,.55),0 0 70px rgba(224,16,32,.3);
+  }
+  h1 .i{color:var(--red);text-shadow:0 0 30px var(--red-glow)}
+  .tag{
+    max-width:620px;
+    color:var(--muted);
+    font-size:clamp(14px,3.6vw,17px);
+    line-height:1.7;
+  }
+  .tag b{color:var(--ink);font-weight:600}
+  .cta{
+    display:flex;gap:14px;flex-wrap:wrap;justify-content:center;
+    margin-top:6px;
+  }
+  a.btn{
+    text-decoration:none;
+    font-size:14px;letter-spacing:.08em;
+    padding:13px 26px;border-radius:2px;
+    border:1px solid var(--line);
+    color:var(--ink);
+    background:var(--panel);
+    transition:.18s ease;
+    text-transform:uppercase;
+  }
+  a.btn.primary{
+    border-color:var(--red);
+    color:#fff;
+    background:linear-gradient(180deg,rgba(224,16,32,.22),rgba(224,16,32,.08));
+    box-shadow:0 0 0 0 rgba(224,16,32,.5);
+  }
+  a.btn:hover{
+    border-color:var(--red-glow);
+    box-shadow:0 0 22px rgba(224,16,32,.4);
+    transform:translateY(-1px);
+  }
+  .meta{
+    position:relative;z-index:2;
+    display:flex;gap:10px;flex-wrap:wrap;justify-content:center;
+    align-items:center;
+    padding:18px 16px 30px;
+    color:var(--muted);font-size:11px;letter-spacing:.18em;
+    text-transform:uppercase;
+  }
+  .meta .sep{opacity:.4}
+  .chip{
+    border:1px solid var(--line);border-radius:100px;
+    padding:4px 11px;color:var(--muted);
+  }
+  @media (prefers-reduced-motion:reduce){
+    .dot{animation:none}
+    canvas#rain{display:none}
+  }
+</style>
+</head>
+<body>
+  <canvas id="rain"></canvas>
+
+  <main class="wrap">
+    <div class="mark"><span class="dot"></span>system online</div>
+    <h1>FR<span class="i">i</span>DAY</h1>
+    <p class="tag">
+      A <b>self-hosted AI</b>, built from the ground up — its own memory, voice,
+      face and senses. Not a product. Not in the cloud. It runs on hardware I own,
+      and answers only to me.
+    </p>
+    <div class="cta">
+      <a class="btn primary" href="https://friday.aifriday.me">Launch FRIDAY</a>
+      <a class="btn" href="https://github.com/jacobdabest">Source</a>
+    </div>
+  </main>
+
+  <footer class="meta">
+    <span class="chip">local-first</span>
+    <span class="sep">·</span>
+    <span class="chip">open ear, open eye</span>
+    <span class="sep">·</span>
+    <span>aifriday.me</span>
+  </footer>
+
+<script>
+(function(){
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+  if(reduce) return;
+  var c = document.getElementById("rain"), x = c.getContext("2d");
+  var cols, drops, size = 16, chars = "01<>/{}[]#*+=FRIDAY".split("");
+  function reset(){
+    c.width = innerWidth; c.height = innerHeight;
+    cols = Math.floor(c.width / size);
+    drops = new Array(cols).fill(0).map(function(){return Math.random()*-50;});
+  }
+  reset(); addEventListener("resize", reset);
+  function draw(){
+    x.fillStyle = "rgba(7,6,10,0.08)";
+    x.fillRect(0,0,c.width,c.height);
+    x.font = size + "px monospace";
+    for(var i=0;i<cols;i++){
+      var ch = chars[(Math.random()*chars.length)|0];
+      var y = drops[i]*size;
+      x.fillStyle = Math.random() > 0.975 ? "#ff5a66" : "#c21020";
+      x.fillText(ch, i*size, y);
+      if(y > c.height && Math.random() > 0.975) drops[i] = 0;
+      drops[i] += 0.5;
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
+</body>
+</html>
